@@ -1,0 +1,6 @@
+mapnik python binding are put in the minitage depeneencies/python-2.5 directory
+this is a limitation that i have to work on but it may be complicated to change the build sytem!
+
+
+
+

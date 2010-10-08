@@ -1,0 +1,16 @@
+Index: src/image_util.cpp
+===================================================================
+--- src/image_util.cpp	(révision 847)
++++ src/image_util.cpp	(copie de travail)
+@@ -20,7 +20,10 @@
+  *
+  *****************************************************************************/
+ 
+-//$Id: image_util.cpp 36 2005-04-05 14:32:18Z pavlenko $
++extern "C"
++{
++        #include <png.h>
++}
+ 
+ // mapnik
+ #include <mapnik/image_util.hpp>

@@ -1,0 +1,56 @@
+Index: SConstruct
+===================================================================
+--- SConstruct	(révision 2271)
++++ SConstruct	(copie de travail)
+@@ -568,8 +568,10 @@
+ 
+     # note: must call normpath to strip trailing slash otherwise dirname
+     # does not remove 'lib' and 'include'
+-    prefixes.insert(0,os.path.dirname(os.path.normpath(env['BOOST_INCLUDES'])))
+-    prefixes.insert(0,os.path.dirname(os.path.normpath(env['BOOST_LIBS'])))
++    for prefix in env['BOOST_INCLUDES'].split()+env['BOOST_LIBS'].split():
++        fp = os.path.abspath(os.path.dirname(os.path.normpath(prefix)))
++        if not fp in prefixes:
++            prefixes.insert(0,fp)
+     for searchDir in prefixes:
+         libItems = glob(os.path.join(searchDir, LIBDIR_SCHEMA, '%s*.*' % search_lib))
+         if not libItems:
+@@ -585,6 +587,7 @@
+             break
+     
+     msg = str()
++    #env.AppendUnique(LIB='%s%s'%(search_lib[3:], BOOST_APPEND)) 
+     
+     if BOOST_LIB_DIR:
+         msg += '\n  *libs found: %s' % BOOST_LIB_DIR
+@@ -622,8 +625,8 @@
+             env['BOOST_APPEND'] = '-'.join(append_params)
+         msg += '\n  *using boost lib naming: %s' % env['BOOST_APPEND']
+ 
+-    env.AppendUnique(CPPPATH = env['BOOST_INCLUDES'])
+-    env.AppendUnique(LIBPATH = env['BOOST_LIBS'])    
++    env.AppendUnique(CPPPATH = env['BOOST_INCLUDES'].split())
++    env.AppendUnique(LIBPATH = env['BOOST_LIBS'].split())    
+     if env['COLOR_PRINT']:
+         msg = "\033[94m%s\033[0m" % (msg)
+     ret = context.Result(msg)
+@@ -812,8 +815,8 @@
+     for required in ('PNG', 'JPEG', 'TIFF','PROJ','ICU'):
+         inc_path = env['%s_INCLUDES' % required]
+         lib_path = env['%s_LIBS' % required]
+-        env.AppendUnique(CPPPATH = inc_path)
+-        env.AppendUnique(LIBPATH = lib_path)
++        env.AppendUnique(CPPPATH = inc_path.split())
++        env.AppendUnique(LIBPATH = lib_path.split())
+ 
+     conf.parse_config('FREETYPE_CONFIG')
+ 
+@@ -1138,7 +1141,7 @@
+             # as they are later set in the python SConscript
+             # ugly hack needed until we have env specific conf
+             backup = env.Clone().Dictionary()
+-            env.AppendUnique(CPPPATH = env['PYTHON_INCLUDES'])
++            env.AppendUnique(CPPPATH = env['PYTHON_INCLUDES'].split())
+             
+             if not conf.CheckHeader(header='Python.h',language='C'):
+                 color_print(1,'Could not find required header files for the Python language (version %s)' % env['PYTHON_VERSION'])

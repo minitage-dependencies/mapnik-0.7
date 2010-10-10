@@ -34,7 +34,17 @@ Index: SConstruct
      if env['COLOR_PRINT']:
          msg = "\033[94m%s\033[0m" % (msg)
      ret = context.Result(msg)
-@@ -812,8 +815,8 @@
+@@ -790,6 +793,9 @@
+     
+     # set any custom cxxflags to come first
+     env.Append(CXXFLAGS = env['CUSTOM_CXXFLAGS'])
++    env.Append(CFLAGS   = env['CUSTOM_CXXFLAGS'])
++    env.Append(LDFLAGS  = env['CUSTOM_LDFLAGS'])
++    env.Append(LINKFLAGS  = env['CUSTOM_LDFLAGS'])
+     
+     # Solaris & Sun Studio settings (the `SUNCC` flag will only be
+     # set if the `CXX` option begins with `CC`)
+@@ -812,8 +818,8 @@
      for required in ('PNG', 'JPEG', 'TIFF','PROJ','ICU'):
          inc_path = env['%s_INCLUDES' % required]
          lib_path = env['%s_LIBS' % required]
@@ -45,7 +55,7 @@ Index: SConstruct
  
      conf.parse_config('FREETYPE_CONFIG')
  
-@@ -1138,7 +1141,7 @@
+@@ -1138,7 +1144,7 @@
              # as they are later set in the python SConscript
              # ugly hack needed until we have env specific conf
              backup = env.Clone().Dictionary()

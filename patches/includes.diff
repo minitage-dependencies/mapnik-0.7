@@ -1,0 +1,16 @@
+Index: src/SConscript
+===================================================================
+--- src/SConscript	(révision 2615)
++++ src/SConscript	(copie de travail)
+@@ -287,8 +287,11 @@
+     env['create_uninstall_target'](env, os.path.join(target_path,mapnik_libname))
+ 
+ includes = glob.glob('../include/mapnik/*.hpp')
++svg_includes = glob.glob('../include/mapnik/svg/*.hpp')
+ 
+ inc_target = os.path.normpath(install_prefix+'/include/mapnik')
++svg_inc_target = os.path.normpath(install_prefix+'/include/mapnik/svg')
+ if 'uninstall' not in COMMAND_LINE_TARGETS:
+     env.Alias(target='install', source=env.Install(inc_target, includes))
++    env.Alias(target='install', source=env.Install(svg_inc_target, svg_includes))
+ env['create_uninstall_target'](env, inc_target)

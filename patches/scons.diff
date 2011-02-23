@@ -15,12 +15,24 @@ Index: SConstruct
      for searchDir in prefixes:
          libItems = glob(os.path.join(searchDir, LIBDIR_SCHEMA, '%s*.*' % search_lib))
          if not libItems:
-@@ -877,6 +883,8 @@
+@@ -876,14 +882,18 @@
+     env['LIBPATH'] = ['#src']
      
      # set any custom cxxflags to come first
-     env.Append(CXXFLAGS = env['CUSTOM_CXXFLAGS'])
-+    env.Append(CFLAGS = env['CUSTOM_CXXFLAGS'])
-+    env.Append(LINKFLAGS = env['CUSTOM_LDFLAGS'])
+-    env.Append(CXXFLAGS = env['CUSTOM_CXXFLAGS'])
++    if 'CUSTOM_CXXFLAGS' in env:
++        env.Append(CFLAGS = env['CUSTOM_CXXFLAGS'])
++        env.Append(CXXFLAGS = env['CUSTOM_CXXFLAGS'])
++    # at build time, compilation directories take precedence over user custom cflags/ldflags
++    if 'CUSTOM_LDFLAGS' in env:
++        env.Append(LINKFLAGS = env['CUSTOM_LDFLAGS'])
      
      # Solaris & Sun Studio settings (the `SUNCC` flag will only be
      # set if the `CXX` option begins with `CC`)
+     SOLARIS = env['PLATFORM'] == 'SunOS'
+     env['SUNCC'] = SOLARIS and env['CXX'].startswith('CC')
+     
+-    
+     # If the Sun Studio C++ compiler (`CC`) is used instead of GCC.
+     if env['SUNCC']:
+         env['CC'] = 'cc'

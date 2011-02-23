@@ -2,41 +2,25 @@ Index: SConstruct
 ===================================================================
 --- SConstruct	(révision 2615)
 +++ SConstruct	(copie de travail)
-@@ -518,8 +518,11 @@
-     else:
-         search_lib = 'libboost_filesystem'
-     
--    prefixes.insert(0,os.path.dirname(env['BOOST_INCLUDES']))
--    prefixes.insert(0,os.path.dirname(env['BOOST_LIBS']))
-+    for prefix in env['BOOST_INCLUDES'].split()+env['BOOST_LIBS'].split():
+@@ -627,6 +627,12 @@
+     # does not remove 'lib' and 'include'
+     prefixes.insert(0,os.path.dirname(os.path.normpath(env['BOOST_INCLUDES'])))
+     prefixes.insert(0,os.path.dirname(os.path.normpath(env['BOOST_LIBS'])))
++    # try to find in custom cflags/ldflags also
++    for prefix in env['CUSTOM_CXXFLAGS'].split()+env['CUSTOM_LDFLAGS'].split():
++        prefix = prefix.replace('-I', '').replace('-L', '')
 +        fp = os.path.abspath(os.path.dirname(os.path.normpath(prefix)))
 +        if not fp in prefixes:
-+            prefixes.insert(0,fp)
-+ 
++            prefixes.insert(0,fp) 
      for searchDir in prefixes:
          libItems = glob(os.path.join(searchDir, LIBDIR_SCHEMA, '%s*.*' % search_lib))
          if not libItems:
-@@ -733,6 +736,12 @@
-     # Set up for libraries and headers dependency checks
-     env['CPPPATH'] = ['#include', '#']
-     env['LIBPATH'] = ['#src']
-+    env.Append(CFLAGS   = os.environ.get('CFLAGS'))
-+    env.Append(CPPFLAGS   = os.environ.get('CFLAGS'))
-+    env.Append(CXXFLAGS   = os.environ.get('CFLAGS'))
-+    env.Append(LDFLAGS  = os.environ.get('LDFLAGS')) 
-+    env.Append(LINKFLAGS  = os.environ.get('LDFLAGS'))
-+ 
+@@ -877,6 +883,8 @@
+     
+     # set any custom cxxflags to come first
+     env.Append(CXXFLAGS = env['CUSTOM_CXXFLAGS'])
++    env.Append(CFLAGS = env['CUSTOM_CXXFLAGS'])
++    env.Append(LINKFLAGS = env['CUSTOM_LDFLAGS'])
      
      # Solaris & Sun Studio settings (the `SUNCC` flag will only be
      # set if the `CXX` option begins with `CC`)
-@@ -760,8 +769,8 @@
-     for required in ('PNG', 'JPEG', 'TIFF','PROJ','ICU'):
-         inc_path = env['%s_INCLUDES' % required]
-         lib_path = env['%s_LIBS' % required]
--        env.AppendUnique(CPPPATH = inc_path)
--        env.AppendUnique(LIBPATH = lib_path)
-+        env.AppendUnique(CPPPATH = inc_path.split())
-+        env.AppendUnique(LIBPATH = lib_path.split())
- 
-     conf.parse_config('FREETYPE_CONFIG')
- 

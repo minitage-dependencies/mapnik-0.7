@@ -1,0 +1,161 @@
+Index: src/load_map.cpp
+===================================================================
+--- src/load_map.cpp	(révision 2615)
++++ src/load_map.cpp	(copie de travail)
+@@ -239,7 +239,7 @@
+             else if (v.first == "FileSource")
+             {
+ 		std::string name = get_attr<string>( v.second, "name");
+-		std::string value = get_own<string>( v.second, "");
++		std::string value = get_value<string>( v.second, "");
+ 		file_sources_[name] = value;
+             }
+             else if (v.first == "Datasource")
+@@ -255,7 +255,7 @@
+ 		    if (paramIter->first == "Parameter")
+ 		    {
+ 			std::string name = get_attr<string>(param, "name");
+-			std::string value = get_own<string>( param,
++			std::string value = get_value<string>( param,
+ 							     "datasource parameter");
+ 			params[name] = value;
+ 		    }
+@@ -459,7 +459,7 @@
+ 		    if (paramIter->first == "Parameter")
+ 		    {
+ 			std::string name = get_attr<string>(param, "name");
+-			std::string value = get_own<string>( param,
++			std::string value = get_value<string>( param,
+ 							     "datasource parameter");
+ 			params[name] = value;
+ 		    }
+Index: include/mapnik/ptree_helpers.hpp
+===================================================================
+--- include/mapnik/ptree_helpers.hpp	(révision 2615)
++++ include/mapnik/ptree_helpers.hpp	(copie de travail)
+@@ -42,7 +42,7 @@
+     template <typename T>
+     T get(const boost::property_tree::ptree & node, const std::string & name, bool is_attribute);
+     template <typename T>
+-    T get_own(const boost::property_tree::ptree & node, const std::string & name);
++    T get_value(const boost::property_tree::ptree & node, const std::string & name);
+     template <typename T>
+     boost::optional<T> get_optional(const boost::property_tree::ptree & node, const std::string & name,
+                                     bool is_attribute);
+@@ -77,14 +77,14 @@
+     template <typename T>
+     T get_css( const boost::property_tree::ptree & node, const std::string & name )
+     {
+-        return get_own<T>( node, std::string("CSS parameter '") + name + "'");
++        return get_value<T>( node, std::string("CSS parameter '") + name + "'");
+     }
+ 
+    // specialization for color type
+    template <>
+    inline color get_css (boost::property_tree::ptree const& node, std::string const& name)
+    {
+-      std::string str = get_own<std::string>( node, std::string("CSS parameter '") + name + "'"); ;
++      std::string str = get_value<std::string>( node, std::string("CSS parameter '") + name + "'"); ;
+       try
+       {
+          return mapnik::color_factory::from_string(str.c_str());
+@@ -190,7 +190,7 @@
+             boost::property_tree::ptree::value_type("CssParameter", 
+             boost::property_tree::ptree()))->second;
+         css_node.put("<xmlattr>.name", name );
+-        css_node.put_own( v );
++        css_node.put_value( v );
+     }
+ 
+     template <typename T>
+@@ -341,11 +341,11 @@
+     }
+ 
+     template <typename T>
+-    T get_own(const boost::property_tree::ptree & node, const std::string & name)
++    T get_value(const boost::property_tree::ptree & node, const std::string & name)
+     {
+         try
+         {
+-            return node.get_own<T>();
++            return node.get_value<T>();
+         }
+         catch (...)
+         {
+Index: src/save_map.cpp
+===================================================================
+--- src/save_map.cpp	(révision 2615)
++++ src/save_map.cpp	(copie de travail)
+@@ -388,7 +388,7 @@
+             if ( filter != default_filter)
+             {
+                 rule_node.push_back( ptree::value_type(
+-                            "Filter", ptree()))->second.put_own( filter );
++                            "Filter", ptree()))->second.put_value( filter );
+             }
+         }
+ 
+@@ -396,14 +396,14 @@
+         {
+             ptree & min_scale = rule_node.push_back( ptree::value_type(
+                     "MinScaleDenominator", ptree()))->second;
+-            min_scale.put_own( rule.get_min_scale() );
++            min_scale.put_value( rule.get_min_scale() );
+         }
+ 
+         if (rule.get_max_scale() != dfl.get_max_scale() )
+         {
+             ptree & max_scale = rule_node.push_back( ptree::value_type(
+                     "MaxScaleDenominator", ptree()))->second;
+-            max_scale.put_own( rule.get_max_scale() );
++            max_scale.put_value( rule.get_max_scale() );
+         }
+ 
+         symbolizers::const_iterator begin = rule.get_symbolizers().begin();
+@@ -465,7 +465,7 @@
+                     boost::property_tree::ptree::value_type("Parameter",
+                     boost::property_tree::ptree()))->second;
+             param_node.put("<xmlattr>.name", it->first );
+-            param_node.put_own( it->second );
++            param_node.put_value( it->second );
+ 
+         }
+     }
+@@ -525,7 +525,7 @@
+             boost::property_tree::ptree & style_node = layer_node.push_back(
+                     boost::property_tree::ptree::value_type("StyleName",
+                     boost::property_tree::ptree()))->second;
+-            style_node.put_own( style_names[i] );
++            style_node.put_value( style_names[i] );
+         }
+ 
+         datasource_ptr datasource = layer.datasource();
+Index: src/libxml2_loader.cpp
+===================================================================
+--- src/libxml2_loader.cpp	(révision 2615)
++++ src/libxml2_loader.cpp	(copie de travail)
+@@ -166,7 +166,7 @@
+                     {
+                         ptree::iterator it = attr_list.push_back(
+                                 ptree::value_type( (char*)cur_attr->name, ptree() ));
+-                        it->second.put_own( (char*) cur_attr->children->content );
++                        it->second.put_value( (char*) cur_attr->children->content );
+                     }
+                 }
+             }
+@@ -188,13 +188,13 @@
+                             }
+                             break;
+                         case XML_TEXT_NODE:
+-                            pt.put_own( (char*) cur_node->content );
++                            pt.put_value( (char*) cur_node->content );
+                             break;
+                         case XML_COMMENT_NODE:
+                             {
+                                 ptree::iterator it = pt.push_back(
+                                         ptree::value_type( "<xmlcomment>", ptree() ));
+-                                it->second.put_own( (char*) cur_node->content );
++                                it->second.put_value( (char*) cur_node->content );
+                             }
+                             break;
+                         default:
